@@ -1,0 +1,1 @@
+{"version":3,"sources":["config.js"],"names":["api_path","token"],"mappings":";;AAAA;AACA;AAEA,IAAMA,QAAQ,GAAG,YAAjB;AACA,IAAMC,KAAK,GAAG,8BAAd","sourcesContent":["////config section\r\n// config test\r\n\r\nconst api_path = \"testrabbit\";\r\nconst token = \"8ki6mIFCZqOqa2U0T7bPSRXZkOr2\";"],"file":"config.js"}
