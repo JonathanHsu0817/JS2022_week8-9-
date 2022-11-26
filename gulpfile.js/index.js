@@ -62,7 +62,6 @@ function babel() {
     .pipe($.babel({
       presets: ['@babel/env'],
     }))
-    .pipe($.concat(envOptions.javascript.concat))
     .pipe($.sourcemaps.write('.'))
     .pipe(gulp.dest(envOptions.javascript.path))
     .pipe(
