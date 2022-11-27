@@ -11,8 +11,7 @@ function init() {
   getCartList();
 }
 
-;
-init(); //取product api裡資料
+; //取product api裡資料
 
 function getProductList() {
   axios.get("https://livejs-api.hexschool.io/api/livejs/v1/customer/".concat(api_path, "/products")).then(function (res) {
@@ -27,7 +26,7 @@ function getProductList() {
 function renderCard(data) {
   var str = "";
   data.forEach(function (item) {
-    var content = "<li class=\"productCard\">\n            <h4 class=\"productType\">\u65B0\u54C1</h4>\n            <img src=\"".concat(item.images, "\" alt=\"\">\n            <a href=\"#\" class=\"js-addCart\" data-id=\"").concat(item.id, "\">\u52A0\u5165\u8CFC\u7269\u8ECA</a>\n            <h3>").concat(item.title, "</h3>\n            <del class=\"originPrice\">NT").concat(item.origin_price, "</del>\n            <p class=\"nowPrice\">NT").concat(item.price, "</p>\n        </li>");
+    var content = "<li class=\"productCard\">\n            <h4 class=\"productType\">\u65B0\u54C1</h4>\n            <img src=\"".concat(item.images, "\" alt=\"\">\n            <a href=\"#\" class=\"js-addCart\" data-id=\"").concat(item.id, "\">\u52A0\u5165\u8CFC\u7269\u8ECA</a>\n            <h3>").concat(item.title, "</h3>\n            <del class=\"originPrice\">NT$").concat(toThousandsComma(item.origin_price), "</del>\n            <p class=\"nowPrice\">NT$").concat(toThousandsComma(item.price), "</p>\n        </li>");
     str += content;
   });
   productList.innerHTML = str;
@@ -62,15 +61,14 @@ productList.addEventListener("click", function (e) {
 
   var productId = e.target.getAttribute("data-id");
   console.log(productId);
-  var numberCheck = 1; // console.log(cartData)
-
+  var numberCheck = 1;
+  console.log(cartData);
   cartData.forEach(function (item) {
     if (productId === item.product.id) {
-      item.quantity += 1;
-      numberCheck = item.quantity;
-    } // console.log(numberCheck)
-
-  }); // 加入購物車 數量 並輸入給api
+      numberCheck = item.quantity + 1;
+    }
+  });
+  console.log(numberCheck); // 加入購物車 數量 並輸入給api
 
   axios.post("https://livejs-api.hexschool.io/api/livejs/v1/customer/".concat(api_path, "/carts"), {
     "data": {
@@ -78,9 +76,9 @@ productList.addEventListener("click", function (e) {
       "quantity": numberCheck
     }
   }).then(function (res) {
-    console.log(res);
+    // console.log(res)
     alert("加入成功");
-    getCartList(cartData);
+    getCartList();
   });
 }); //取購物車api
 
@@ -88,8 +86,9 @@ function getCartList() {
   axios.get("https://livejs-api.hexschool.io/api/livejs/v1/customer/".concat(api_path, "/carts")).then(function (res) {
     // console.log(res.data);
     var finalTotal = res.data.finalTotal;
-    document.querySelector(".js-total").textContent = finalTotal;
-    cartData = res.data.carts;
+    document.querySelector(".js-total").textContent = toThousandsComma(finalTotal);
+    cartData = res.data.carts; // console.log(cartData);
+
     renderCart(cartData);
   });
 }
@@ -99,7 +98,7 @@ var cartList = document.querySelector(".shoppingCart-tableList");
 function renderCart(data) {
   var str = '';
   data.forEach(function (item) {
-    var content = "<tr>\n            <td>\n                <div class=\"cardItem-title\">\n                    <img src=\"".concat(item.product.images, "\" alt=\"\">\n                    <p>").concat(item.product.title, "</p>\n                </div>\n            </td>\n            <td>").concat(item.product.price, "</td>\n            <td>").concat(item.quantity, "</td>\n            <td>").concat(item.product.price * item.quantity, "</td>\n            <td class=\"discardBtn\">\n                <a href=\"#\" class=\"material-icons\" data-id=\"").concat(item.id, "\">\n                    clear\n                </a>\n            </td>\n        </tr>");
+    var content = "<tr>\n            <td>\n                <div class=\"cardItem-title\">\n                    <img src=\"".concat(item.product.images, "\" alt=\"\">\n                    <p>").concat(item.product.title, "</p>\n                </div>\n            </td>\n            <td>$").concat(toThousandsComma(item.product.price), "</td>\n            <td>").concat(item.quantity, "</td>\n            <td>$").concat(toThousandsComma(item.product.price * item.quantity), "</td>\n            <td class=\"discardBtn\">\n                <a href=\"#\" class=\"material-icons\" data-id=\"").concat(item.id, "\">\n                    clear\n                </a>\n            </td>\n        </tr>");
     str += content;
   });
   cartList.innerHTML = str;
@@ -132,8 +131,10 @@ discardAllBtn.addEventListener('click', function (e) {
     alert("已清空，請勿重複刪除");
     getCartList();
   });
-}); ////加入預定訂單
+});
+init(); ////加入預定訂單
 
+var orderForm = document.querySelector(".orderInfo-form");
 var orderInfoBtn = document.querySelector(".orderInfo-btn");
 orderInfoBtn.addEventListener("click", function (e) {
   e.preventDefault(); // console.log(e.target)
@@ -154,7 +155,6 @@ orderInfoBtn.addEventListener("click", function (e) {
     return;
   }
 
-  var orderForm = document.querySelector(".orderInfo-form");
   axios.post("https://livejs-api.hexschool.io/api/livejs/v1/customer/".concat(api_path, "/orders"), {
     "data": {
       "user": {
@@ -170,5 +170,59 @@ orderInfoBtn.addEventListener("click", function (e) {
     orderForm.reset();
     getCartList();
   });
-});
+}); //validate 驗證
+
+var inputs = document.querySelectorAll("input[name],select[data=payment]");
+var constraints = {
+  "姓名": {
+    presence: {
+      message: "必填欄位"
+    }
+  },
+  "電話": {
+    presence: {
+      message: "必填欄位"
+    },
+    length: {
+      minimum: 8,
+      message: "需超過 8 碼"
+    }
+  },
+  "信箱": {
+    presence: {
+      message: "必填欄位"
+    },
+    email: {
+      message: "格式錯誤"
+    }
+  },
+  "寄送地址": {
+    presence: {
+      message: "必填欄位"
+    }
+  },
+  "交易方式": {
+    presence: {
+      message: "必填欄位"
+    }
+  }
+};
+inputs.forEach(function (item) {
+  item.addEventListener("change", function () {
+    item.nextElementSibling.textContent = '';
+    var errors = validate(orderForm, constraints) || '';
+    console.log(errors);
+
+    if (errors) {
+      Object.keys(errors).forEach(function (keys) {
+        console.log(document.querySelector("[data-message=".concat(keys, "]")));
+        document.querySelector("[data-message=\"".concat(keys, "\"]")).textContent = errors[keys];
+      });
+    }
+  });
+}); //utillities
+
+function toThousandsComma(num) {
+  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
 //# sourceMappingURL=index.js.map

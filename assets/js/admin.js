@@ -1,5 +1,17 @@
 "use strict";
 
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
+
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
+
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
 // 預設 JS，請同學不要修改此處
 var menuOpenBtn = document.querySelector('.menuToggle');
 var linkBtn = document.querySelectorAll('.topBar-menu a');
@@ -72,15 +84,30 @@ function renderC3() {
   var totalItem = {};
   orderListData.forEach(function (item) {
     item.products.forEach(function (products) {
-      if (!totalItem[products.category]) {
-        totalItem[products.category] = products.price * products.quantity;
+      if (!totalItem[products.title]) {
+        totalItem[products.title] = products.price * products.quantity;
       } else {
-        totalItem[products.category] += products.price * products.quantity;
+        totalItem[products.title] += products.price * products.quantity;
       }
     });
   }); // console.log(totalItem)
+  //改成C3格式
 
   var totalItemC3 = Object.entries(totalItem); // console.log(totalItemC3)
+  //整合其他內容
+
+  var otherItem = totalItemC3.filter(function (item, index) {
+    return index > 2;
+  });
+  var otherItemTotal = otherItem.reduce(function (prev, curr) {
+    return [["\u5176\u4ED6", prev[1] + curr[1]]];
+  }); // console.log(otherItemTotal);
+
+  totalItemC3.splice(3, totalItemC3.length - 1);
+  var newOtherTotalC3 = [].concat(_toConsumableArray(totalItemC3), _toConsumableArray(otherItemTotal));
+  newOtherTotalC3.sort(function (a, b) {
+    return a[1] - b[1];
+  }); // console.log(newOtherTotalC3);
   // C3.js
 
   var chart = c3.generate({
@@ -88,13 +115,10 @@ function renderC3() {
     // HTML 元素綁定
     data: {
       type: "pie",
-      columns: totalItemC3,
-      colors: {
-        "床架": "#DACBFF",
-        "收納": "#9D7FEA",
-        "窗簾": "#5434A7",
-        "其他": "#301E5F"
-      }
+      columns: newOtherTotalC3
+    },
+    color: {
+      pattern: ["#DACBFF", "#9D7FEA", "#5434A7", "#301E5F"]
     }
   });
 }
