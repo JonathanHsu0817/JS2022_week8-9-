@@ -9,7 +9,7 @@ function init(){
     getCartList();
 };
 
-init();
+
 
 //取product api裡資料
 function getProductList(){
@@ -21,7 +21,6 @@ function getProductList(){
       })
 };
 
-
 //將product api資料渲染成HTML(card)
 function renderCard(data){
     let str = "";
@@ -31,8 +30,8 @@ function renderCard(data){
             <img src="${item.images}" alt="">
             <a href="#" class="js-addCart" data-id="${item.id}">加入購物車</a>
             <h3>${item.title}</h3>
-            <del class="originPrice">NT${item.origin_price}</del>
-            <p class="nowPrice">NT${item.price}</p>
+            <del class="originPrice">NT$${toThousandsComma(item.origin_price)}</del>
+            <p class="nowPrice">NT$${toThousandsComma(item.price)}</p>
         </li>`
         str+=content;
     })
@@ -69,15 +68,13 @@ productList.addEventListener("click",(e)=>{
     console.log(productId)
 
     let numberCheck = 1;
-    // console.log(cartData)
+    console.log(cartData)
     cartData.forEach(item =>{
         if(productId === item.product.id){
-            item.quantity+=1;
-            numberCheck=item.quantity;
+            numberCheck=item.quantity+1;
         }
-        // console.log(numberCheck)
     })
-
+    console.log(numberCheck);
     // 加入購物車 數量 並輸入給api
     axios.post(`https://livejs-api.hexschool.io/api/livejs/v1/customer/${api_path}/carts`,{
         "data": {
@@ -85,9 +82,9 @@ productList.addEventListener("click",(e)=>{
             "quantity": numberCheck
           }
     }).then(res=>{
-            console.log(res)
+            // console.log(res)
             alert("加入成功")
-            getCartList(cartData);
+            getCartList();
         })
 })
 
@@ -97,8 +94,9 @@ function getCartList(){
         .then(res=>{
             // console.log(res.data);
             let finalTotal = res.data.finalTotal;
-            document.querySelector(".js-total").textContent = finalTotal;
+            document.querySelector(".js-total").textContent = toThousandsComma(finalTotal);
             cartData = res.data.carts;
+            // console.log(cartData);
             renderCart(cartData);
         })
 }
@@ -115,9 +113,9 @@ function renderCart(data){
                     <p>${item.product.title}</p>
                 </div>
             </td>
-            <td>${item.product.price}</td>
+            <td>$${toThousandsComma(item.product.price)}</td>
             <td>${item.quantity}</td>
-            <td>${item.product.price * item.quantity}</td>
+            <td>$${toThousandsComma(item.product.price * item.quantity)}</td>
             <td class="discardBtn">
                 <a href="#" class="material-icons" data-id="${item.id}">
                     clear
@@ -126,7 +124,6 @@ function renderCart(data){
         </tr>`
         str+=content;
     })
-    
     cartList.innerHTML = str;
 }
 
@@ -163,8 +160,10 @@ discardAllBtn.addEventListener('click',(e)=>{
         })
 })
 
-////加入預定訂單
+init();
 
+////加入預定訂單
+const orderForm = document.querySelector(".orderInfo-form");
 const orderInfoBtn = document.querySelector(".orderInfo-btn");
 orderInfoBtn.addEventListener("click",(e)=>{
     e.preventDefault();
@@ -184,8 +183,6 @@ orderInfoBtn.addEventListener("click",(e)=>{
         return;
     }
 
-    const orderForm = document.querySelector(".orderInfo-form");
-
     axios.post(`https://livejs-api.hexschool.io/api/livejs/v1/customer/${api_path}/orders`,{
         "data": {
             "user": {
@@ -202,3 +199,61 @@ orderInfoBtn.addEventListener("click",(e)=>{
         getCartList();
     })
 })
+//validate 驗證
+const inputs = document.querySelectorAll("input[name],select[data=payment]");
+
+const constraints = {
+    "姓名": {
+      presence: {
+        message: "必填欄位"
+      }
+    },
+    "電話": {
+      presence: {
+        message: "必填欄位"
+      },
+      length: {
+        minimum: 8,
+        message: "需超過 8 碼"
+      }
+    },
+    "信箱": {
+      presence: {
+        message: "必填欄位"
+      },
+      email: {
+        message: "格式錯誤"
+      }
+    },
+    "寄送地址": {
+      presence: {
+        message: "必填欄位"
+      }
+    },
+    "交易方式": {
+      presence: {
+        message: "必填欄位"
+      }
+    },
+  };
+
+  inputs.forEach((item) => {
+    item.addEventListener("change", function () {
+      
+      item.nextElementSibling.textContent = '';
+      let errors = validate(orderForm, constraints) || '';
+      console.log(errors)
+
+      if (errors) {
+        Object.keys(errors).forEach(function (keys) {
+          console.log(document.querySelector(`[data-message=${keys}]`))
+          document.querySelector(`[data-message="${keys}"]`).textContent = errors[keys];
+        })
+      }
+    });
+  });
+
+//utillities
+function　toThousandsComma(num){
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}

@@ -19,8 +19,6 @@ function closeMenu() {
     menu.classList.remove('openMenu');
 }
 
-
-
 ////後台
 //取得訂單資料
 
@@ -93,29 +91,47 @@ function renderC3(){
     let totalItem ={};
     orderListData.forEach(item=>{
         item.products.forEach(products=>{
-            if(!totalItem[products.category]){
-                totalItem[products.category] = products.price*products.quantity;
+            if(!totalItem[products.title]){
+                totalItem[products.title] = products.price*products.quantity;
             }else{
-                totalItem[products.category] += products.price*products.quantity;
+                totalItem[products.title] += products.price*products.quantity;
             }
         })
     })
     // console.log(totalItem)
+
+    //改成C3格式
     let totalItemC3 = Object.entries(totalItem);
+    
     // console.log(totalItemC3)
+    //整合其他內容
+    
+    let otherItem = totalItemC3.filter((item,index)=>{
+        return index>2
+    })
+
+    let otherItemTotal = otherItem.reduce((prev,curr)=>{
+        return [[`其他`,prev[1]+curr[1]]]
+    })
+    // console.log(otherItemTotal);
+    totalItemC3.splice(3,totalItemC3.length-1)
+    
+    let newOtherTotalC3 = [...totalItemC3,...otherItemTotal];
+    newOtherTotalC3.sort((a,b)=>{
+        return a[1]-b[1]
+    })
+    // console.log(newOtherTotalC3);
+    
     // C3.js
     let chart = c3.generate({
         bindto: '#chart', // HTML 元素綁定
         data: {
             type: "pie",
-            columns: totalItemC3,
-            colors:{
-                "床架":"#DACBFF",
-                "收納":"#9D7FEA",
-                "窗簾": "#5434A7",
-                "其他": "#301E5F",
-            }
+            columns: newOtherTotalC3,
         },
+        color:{
+            pattern: ["#DACBFF","#9D7FEA","#5434A7","#301E5F"]
+        }
     });
 }
 
