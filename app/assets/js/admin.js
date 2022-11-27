@@ -41,12 +41,14 @@ function getOrderList() {
         // console.log(response.data);
         orderListData = response.data.orders;
         renderC3();
+        console.log(orderListData);
         renderList(orderListData);
       })
   }
 
 function renderList(data){
     let str = "";
+
     data.forEach(item=>{
       //組訂單商品資訊
       let productStr = "";
@@ -129,7 +131,7 @@ function renderC3(){
             type: "pie",
             columns: newOtherTotalC3,
         },
-        color:{
+        color:{ 
             pattern: ["#DACBFF","#9D7FEA","#5434A7","#301E5F"]
         }
     });

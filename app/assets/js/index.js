@@ -10,7 +10,6 @@ function init(){
 };
 
 
-
 //取product api裡資料
 function getProductList(){
     axios.get(`https://livejs-api.hexschool.io/api/livejs/v1/customer/${api_path}/products`)
@@ -64,7 +63,7 @@ productList.addEventListener("click",(e)=>{
     if(addCartClass !== "js-addCart"){
         return;
     }
-    let productId = e.target.getAttribute("data-id");
+    let productId = e.target.getAttribute("data-id");//e.target.dataset.id
     console.log(productId)
 
     let numberCheck = 1;
@@ -217,7 +216,7 @@ const constraints = {
         message: "需超過 8 碼"
       }
     },
-    "信箱": {
+    "Email": {
       presence: {
         message: "必填欄位"
       },
