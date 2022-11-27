@@ -59,7 +59,8 @@ productList.addEventListener("click", function (e) {
     return;
   }
 
-  var productId = e.target.getAttribute("data-id");
+  var productId = e.target.getAttribute("data-id"); //e.target.dataset.id
+
   console.log(productId);
   var numberCheck = 1;
   console.log(cartData);
@@ -188,7 +189,7 @@ var constraints = {
       message: "需超過 8 碼"
     }
   },
-  "信箱": {
+  "Email": {
     presence: {
       message: "必填欄位"
     },

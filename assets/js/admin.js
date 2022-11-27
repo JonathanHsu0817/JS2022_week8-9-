@@ -52,6 +52,7 @@ function getOrderList() {
     // console.log(response.data);
     orderListData = response.data.orders;
     renderC3();
+    console.log(orderListData);
     renderList(orderListData);
   });
 }
